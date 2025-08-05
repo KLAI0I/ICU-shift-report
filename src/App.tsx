@@ -431,6 +431,287 @@ function App() {
             </div>
           </div>
 
+          {/* Attached Line Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Attached Line</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-4 py-2 text-left">Invasive Line</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Insertion date</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Insertion Site</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Size</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Removal date</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Inserted By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2, 3].map((row) => (
+                    <tr key={row}>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="date" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="date" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Infusion and Antibiotics Section */}
+          <div className="grid grid-cols-2 gap-0">
+            {/* Infusion Section */}
+            <div>
+              <div className="bg-blue-200 px-6 py-2">
+                <h3 className="font-semibold">Infusion</h3>
+              </div>
+              <div className="p-6 border-r border-gray-300">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-blue-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Medication / Solution Name</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose + Dilution</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[1, 2, 3, 4].map((row) => (
+                        <tr key={row}>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Antibiotics Section */}
+            <div>
+              <div className="bg-blue-200 px-6 py-2">
+                <h3 className="font-semibold">Antibiotics</h3>
+              </div>
+              <div className="p-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-blue-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Antibiotic Name</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose & frequency</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Start at</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">End at</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[1, 2, 3, 4].map((row) => (
+                        <tr key={row}>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="date" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2">
+                            <input type="date" className="w-full border-0 focus:outline-none text-sm" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scheduled Tasks and Diet Section */}
+          <div className="grid grid-cols-2 gap-0">
+            {/* Scheduled Tasks */}
+            <div>
+              <div className="bg-blue-200 px-6 py-2">
+                <h3 className="font-semibold">Scheduled Tasks</h3>
+              </div>
+              <div className="p-6 border-r border-gray-300">
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">RBS</label>
+                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">VBG</label>
+                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ECG</label>
+                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Diet */}
+            <div>
+              <div className="bg-blue-200 px-6 py-2">
+                <h3 className="font-semibold">Diet</h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Bowel Motion</label>
+                    <input type="date" className="w-full rounded-md border border-gray-300 px-3 py-2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Culture & Sensitivity Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Culture & Sensitivity</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-4 py-2 text-left">Date of C/S Collected</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Isolation Precaution taken</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Date of C/S result received</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">C/S Results</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Action Taken</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2, 3].map((row) => (
+                    <tr key={row}>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="date" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="date" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        <input type="text" className="w-full border-0 focus:outline-none" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Anticoagulant Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Anticoagulant</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-4 py-2 text-left">MV</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Mode</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">VT</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">FiO2</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">PS</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Peep</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">O2 Support</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <input type="text" className="w-full border-0 focus:outline-none" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Last Updates Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Last Updates</h3>
+          </div>
+          <div className="p-6">
+            <textarea 
+              className="w-full rounded-md border border-gray-300 px-3 py-2 h-24 resize-none"
+              placeholder="Enter last updates and important notes..."
+            ></textarea>
+          </div>
+
+          {/* Plans Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Plans</h3>
+          </div>
+          <div className="p-6">
+            <textarea 
+              className="w-full rounded-md border border-gray-300 px-3 py-2 h-32 resize-none"
+              placeholder="Enter treatment plans and future care instructions..."
+            ></textarea>
+          </div>
+
           {/* Action Buttons */}
           <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-b-lg">
             <div className="flex space-x-4">
