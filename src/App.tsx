@@ -1,5 +1,40 @@
 import React, { useState } from 'react';
-import { Heart, FileText, Clock, Users, Activity } from 'lucide-react';
+import { Heart, FileText, Clock, Users, Activity, Plus, Trash2 } from 'lucide-react';
+
+interface InvasiveLine {
+  id: string;
+  invasiveLine: string;
+  insertionDate: string;
+  insertionSite: string;
+  size: string;
+  removalDate: string;
+  insertedBy: string;
+}
+
+interface Infusion {
+  id: string;
+  medicationName: string;
+  doseDilution: string;
+  rate: string;
+}
+
+interface Antibiotic {
+  id: string;
+  antibioticName: string;
+  doseFrequency: string;
+  startAt: string;
+  endAt: string;
+}
+
+interface CultureSensitivity {
+  id: string;
+  dateCollected: string;
+  type: string;
+  isolationPrecaution: string;
+  dateResultReceived: string;
+  results: string;
+  actionTaken: string;
+}
 
 function App() {
   const [formData, setFormData] = useState({
@@ -26,10 +61,140 @@ function App() {
     rr: '',
     temp: '',
     spo2: '',
+    // Anticoagulant
+    anticoagulantType: '',
+    medicationName: '',
+    dose: '',
+    frequency: '',
+    route: '',
+    nonPharmacological: '',
+    // MV
+    mvConnected: false,
+    mvMode: '',
+    mvVT: '',
+    mvFiO2: '',
+    mvPS: '',
+    mvPeep: '',
+    mvO2Support: '',
+    // Text areas
+    lastUpdates: '',
+    plans: ''
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  // Dynamic arrays for sections
+  const [invasiveLines, setInvasiveLines] = useState<InvasiveLine[]>([
+    { id: '1', invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' }
+  ]);
+
+  const [infusions, setInfusions] = useState<Infusion[]>([
+    { id: '1', medicationName: '', doseDilution: '', rate: '' }
+  ]);
+
+  const [antibiotics, setAntibiotics] = useState<Antibiotic[]>([
+    { id: '1', antibioticName: '', doseFrequency: '', startAt: '', endAt: '' }
+  ]);
+
+  const [cultureSensitivities, setCultureSensitivities] = useState<CultureSensitivity[]>([
+    { id: '1', dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' }
+  ]);
+
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleTextAreaChange = (field: string, value: string) => {
+    // Add bullet points automatically
+    const lines = value.split('\n');
+    const formattedLines = lines.map(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('•')) {
+        return '• ' + trimmedLine;
+      }
+      return line;
+    });
+    const formattedValue = formattedLines.join('\n');
+    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+  };
+
+  // Invasive Lines functions
+  const addInvasiveLine = () => {
+    const newId = (invasiveLines.length + 1).toString();
+    setInvasiveLines([...invasiveLines, { 
+      id: newId, invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' 
+    }]);
+  };
+
+  const removeInvasiveLine = (id: string) => {
+    if (invasiveLines.length > 1) {
+      setInvasiveLines(invasiveLines.filter(line => line.id !== id));
+    }
+  };
+
+  const updateInvasiveLine = (id: string, field: keyof InvasiveLine, value: string) => {
+    setInvasiveLines(invasiveLines.map(line => 
+      line.id === id ? { ...line, [field]: value } : line
+    ));
+  };
+
+  // Infusion functions
+  const addInfusion = () => {
+    const newId = (infusions.length + 1).toString();
+    setInfusions([...infusions, { id: newId, medicationName: '', doseDilution: '', rate: '' }]);
+  };
+
+  const removeInfusion = (id: string) => {
+    if (infusions.length > 1) {
+      setInfusions(infusions.filter(infusion => infusion.id !== id));
+    }
+  };
+
+  const updateInfusion = (id: string, field: keyof Infusion, value: string) => {
+    setInfusions(infusions.map(infusion => 
+      infusion.id === id ? { ...infusion, [field]: value } : infusion
+    ));
+  };
+
+  // Antibiotic functions
+  const addAntibiotic = () => {
+    const newId = (antibiotics.length + 1).toString();
+    setAntibiotics([...antibiotics, { id: newId, antibioticName: '', doseFrequency: '', startAt: '', endAt: '' }]);
+  };
+
+  const removeAntibiotic = (id: string) => {
+    if (antibiotics.length > 1) {
+      setAntibiotics(antibiotics.filter(antibiotic => antibiotic.id !== id));
+    }
+  };
+
+  const updateAntibiotic = (id: string, field: keyof Antibiotic, value: string) => {
+    setAntibiotics(antibiotics.map(antibiotic => 
+      antibiotic.id === id ? { ...antibiotic, [field]: value } : antibiotic
+    ));
+  };
+
+  // Culture & Sensitivity functions
+  const addCultureSensitivity = () => {
+    const newId = (cultureSensitivities.length + 1).toString();
+    setCultureSensitivities([...cultureSensitivities, { 
+      id: newId, dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' 
+    }]);
+  };
+
+  const removeCultureSensitivity = (id: string) => {
+    if (cultureSensitivities.length > 1) {
+      setCultureSensitivities(cultureSensitivities.filter(cs => cs.id !== id));
+    }
+  };
+
+  const updateCultureSensitivity = (id: string, field: keyof CultureSensitivity, value: string) => {
+    setCultureSensitivities(cultureSensitivities.map(cs => 
+      cs.id === id ? { ...cs, [field]: value } : cs
+    ));
+  };
+
+  const generatePDF = () => {
+    // This would integrate with a PDF generation library
+    alert('PDF generation feature will be implemented with a proper PDF library');
   };
 
   return (
@@ -401,34 +566,6 @@ function App() {
                 </div>
               </div>
             </div>
-
-            {/* Additional Assessment Sections */}
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium text-gray-800 mb-3">Invasive Line</h4>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="text" placeholder="Insertion date" className="rounded-md border border-gray-300 px-3 py-2" />
-                    <input type="text" placeholder="Insertion Site" className="rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <input type="text" placeholder="Size" className="rounded-md border border-gray-300 px-3 py-2" />
-                    <input type="text" placeholder="Removal date" className="rounded-md border border-gray-300 px-3 py-2" />
-                    <input type="text" placeholder="Inserted By" className="rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-800 mb-3">Infusion</h4>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    <input type="text" placeholder="Medication/Solution Name" className="rounded-md border border-gray-300 px-3 py-2" />
-                    <input type="text" placeholder="Dose + Dilution" className="rounded-md border border-gray-300 px-3 py-2" />
-                    <input type="text" placeholder="Rate" className="rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Attached Line Section */}
@@ -446,110 +583,228 @@ function App() {
                     <th className="border border-gray-300 px-4 py-2 text-left">Size</th>
                     <th className="border border-gray-300 px-4 py-2 text-left">Removal date</th>
                     <th className="border border-gray-300 px-4 py-2 text-left">Inserted By</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[1, 2, 3].map((row) => (
-                    <tr key={row}>
+                  {invasiveLines.map((line) => (
+                    <tr key={line.id}>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={line.invasiveLine}
+                          onChange={(e) => updateInvasiveLine(line.id, 'invasiveLine', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="date" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="date" 
+                          value={line.insertionDate}
+                          onChange={(e) => updateInvasiveLine(line.id, 'insertionDate', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={line.insertionSite}
+                          onChange={(e) => updateInvasiveLine(line.id, 'insertionSite', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={line.size}
+                          onChange={(e) => updateInvasiveLine(line.id, 'size', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="date" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="date" 
+                          value={line.removalDate}
+                          onChange={(e) => updateInvasiveLine(line.id, 'removalDate', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={line.insertedBy}
+                          onChange={(e) => updateInvasiveLine(line.id, 'insertedBy', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        {invasiveLines.length > 1 && (
+                          <button
+                            onClick={() => removeInvasiveLine(line.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            <div className="mt-4">
+              <button
+                onClick={addInvasiveLine}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Invasive Line</span>
+              </button>
+            </div>
           </div>
 
-          {/* Infusion and Antibiotics Section */}
-          <div className="grid grid-cols-2 gap-0">
-            {/* Infusion Section */}
-            <div>
-              <div className="bg-blue-200 px-6 py-2">
-                <h3 className="font-semibold">Infusion</h3>
-              </div>
-              <div className="p-6 border-r border-gray-300">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-blue-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Medication / Solution Name</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose + Dilution</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Rate</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[1, 2, 3, 4].map((row) => (
-                        <tr key={row}>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+          {/* Infusion Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Infusion</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Medication / Solution Name</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose + Dilution</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Rate</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {infusions.map((infusion) => (
+                    <tr key={infusion.id}>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="text" 
+                          value={infusion.medicationName}
+                          onChange={(e) => updateInfusion(infusion.id, 'medicationName', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="text" 
+                          value={infusion.doseDilution}
+                          onChange={(e) => updateInfusion(infusion.id, 'doseDilution', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="text" 
+                          value={infusion.rate}
+                          onChange={(e) => updateInfusion(infusion.id, 'rate', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {infusions.length > 1 && (
+                          <button
+                            onClick={() => removeInfusion(infusion.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+            <div className="mt-4">
+              <button
+                onClick={addInfusion}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Infusion</span>
+              </button>
+            </div>
+          </div>
 
-            {/* Antibiotics Section */}
-            <div>
-              <div className="bg-blue-200 px-6 py-2">
-                <h3 className="font-semibold">Antibiotics</h3>
-              </div>
-              <div className="p-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-blue-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Antibiotic Name</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose & frequency</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">Start at</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm">End at</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[1, 2, 3, 4].map((row) => (
-                        <tr key={row}>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="text" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="date" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                          <td className="border border-gray-300 px-3 py-2">
-                            <input type="date" className="w-full border-0 focus:outline-none text-sm" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+          {/* Antibiotics Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">Antibiotics</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Antibiotic Name</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose & frequency</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Start at</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">End at</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {antibiotics.map((antibiotic) => (
+                    <tr key={antibiotic.id}>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="text" 
+                          value={antibiotic.antibioticName}
+                          onChange={(e) => updateAntibiotic(antibiotic.id, 'antibioticName', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="text" 
+                          value={antibiotic.doseFrequency}
+                          onChange={(e) => updateAntibiotic(antibiotic.id, 'doseFrequency', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="date" 
+                          value={antibiotic.startAt}
+                          onChange={(e) => updateAntibiotic(antibiotic.id, 'startAt', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <input 
+                          type="date" 
+                          value={antibiotic.endAt}
+                          onChange={(e) => updateAntibiotic(antibiotic.id, 'endAt', e.target.value)}
+                          className="w-full border-0 focus:outline-none text-sm" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {antibiotics.length > 1 && (
+                          <button
+                            onClick={() => removeAntibiotic(antibiotic.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={addAntibiotic}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Antibiotic</span>
+              </button>
             </div>
           </div>
 
@@ -613,33 +868,83 @@ function App() {
                     <th className="border border-gray-300 px-4 py-2 text-left">Date of C/S result received</th>
                     <th className="border border-gray-300 px-4 py-2 text-left">C/S Results</th>
                     <th className="border border-gray-300 px-4 py-2 text-left">Action Taken</th>
+                    <th className="border border-gray-300 px-4 py-2 text-left">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[1, 2, 3].map((row) => (
-                    <tr key={row}>
+                  {cultureSensitivities.map((cs) => (
+                    <tr key={cs.id}>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="date" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="date" 
+                          value={cs.dateCollected}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'dateCollected', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={cs.type}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'type', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={cs.isolationPrecaution}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'isolationPrecaution', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="date" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="date" 
+                          value={cs.dateResultReceived}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'dateResultReceived', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={cs.results}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'results', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
                       </td>
                       <td className="border border-gray-300 px-4 py-2">
-                        <input type="text" className="w-full border-0 focus:outline-none" />
+                        <input 
+                          type="text" 
+                          value={cs.actionTaken}
+                          onChange={(e) => updateCultureSensitivity(cs.id, 'actionTaken', e.target.value)}
+                          className="w-full border-0 focus:outline-none" 
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-4 py-2">
+                        {cultureSensitivities.length > 1 && (
+                          <button
+                            onClick={() => removeCultureSensitivity(cs.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={addCultureSensitivity}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Culture & Sensitivity</span>
+              </button>
             </div>
           </div>
 
@@ -648,46 +953,151 @@ function App() {
             <h3 className="font-semibold">Anticoagulant</h3>
           </div>
           <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left">MV</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Mode</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">VT</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">FiO2</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">PS</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Peep</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">O2 Support</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Anticoagulant Type</label>
+              <select
+                value={formData.anticoagulantType}
+                onChange={(e) => handleInputChange('anticoagulantType', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2"
+              >
+                <option value="">Select Type</option>
+                <option value="pharmacological">Pharmacological</option>
+                <option value="non-pharmacological">Non Pharmacological</option>
+              </select>
             </div>
+
+            {formData.anticoagulantType === 'pharmacological' && (
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name</label>
+                  <input
+                    type="text"
+                    value={formData.medicationName}
+                    onChange={(e) => handleInputChange('medicationName', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dose</label>
+                  <input
+                    type="text"
+                    value={formData.dose}
+                    onChange={(e) => handleInputChange('dose', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                  <input
+                    type="text"
+                    value={formData.frequency}
+                    onChange={(e) => handleInputChange('frequency', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Route</label>
+                  <input
+                    type="text"
+                    value={formData.route}
+                    onChange={(e) => handleInputChange('route', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+              </div>
+            )}
+
+            {formData.anticoagulantType === 'non-pharmacological' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Non Pharmacological Method</label>
+                <select
+                  value={formData.nonPharmacological}
+                  onChange={(e) => handleInputChange('nonPharmacological', e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2"
+                >
+                  <option value="">Select Method</option>
+                  <option value="DVT device">DVT device</option>
+                  <option value="Elastic Stocking">Elastic Stocking</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* MV Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">MV (Mechanical Ventilation)</h3>
+          </div>
+          <div className="p-6">
+            <div className="mb-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.mvConnected}
+                  onChange={(e) => handleInputChange('mvConnected', e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-700">Patient connected to MV</span>
+              </label>
+            </div>
+
+            {formData.mvConnected && (
+              <div className="grid grid-cols-6 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                  <input
+                    type="text"
+                    value={formData.mvMode}
+                    onChange={(e) => handleInputChange('mvMode', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">VT</label>
+                  <input
+                    type="text"
+                    value={formData.mvVT}
+                    onChange={(e) => handleInputChange('mvVT', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">FiO2</label>
+                  <input
+                    type="text"
+                    value={formData.mvFiO2}
+                    onChange={(e) => handleInputChange('mvFiO2', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PS</label>
+                  <input
+                    type="text"
+                    value={formData.mvPS}
+                    onChange={(e) => handleInputChange('mvPS', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Peep</label>
+                  <input
+                    type="text"
+                    value={formData.mvPeep}
+                    onChange={(e) => handleInputChange('mvPeep', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">O2 Support</label>
+                  <input
+                    type="text"
+                    value={formData.mvO2Support}
+                    onChange={(e) => handleInputChange('mvO2Support', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Last Updates Section */}
@@ -696,6 +1106,8 @@ function App() {
           </div>
           <div className="p-6">
             <textarea 
+              value={formData.lastUpdates}
+              onChange={(e) => handleTextAreaChange('lastUpdates', e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 h-24 resize-none"
               placeholder="Enter last updates and important notes..."
             ></textarea>
@@ -707,6 +1119,8 @@ function App() {
           </div>
           <div className="p-6">
             <textarea 
+              value={formData.plans}
+              onChange={(e) => handleTextAreaChange('plans', e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 h-32 resize-none"
               placeholder="Enter treatment plans and future care instructions..."
             ></textarea>
@@ -715,8 +1129,11 @@ function App() {
           {/* Action Buttons */}
           <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-b-lg">
             <div className="flex space-x-4">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                Save Report
+              <button 
+                onClick={generatePDF}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Save Report as PDF
               </button>
               <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition-colors">
                 Print
