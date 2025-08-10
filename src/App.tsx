@@ -119,6 +119,29 @@ interface PatientCase {
 const App: React.Component = () => {
   const [cases, setCases] = useState<PatientCase[]>([]);
   const [searchMRN, setSearchMRN] = useState('');
+  
+  // Nursing Manpower state
+  const [nursingManpower, setNursingManpower] = useState({
+    noStaff: '',
+    orientee: '',
+    pullOutStaff: '',
+    rcIcuStaff: '',
+    floatToIcuStaff: '',
+    onCall: ''
+  });
+
+  // Census state
+  const [census, setCensus] = useState({
+    noActiveCases: '',
+    admission: '',
+    discharge: '',
+    transferOut: '',
+    dama: '',
+    death: '',
+    codeBlue: '',
+    casesOnCrrt: '',
+    casesOnHemodialysis: ''
+  });
   const [filteredCases, setFilteredCases] = useState<PatientCase[]>([]);
   const [showFiltered, setShowFiltered] = useState(false);
 
@@ -1199,13 +1222,13 @@ const App: React.Component = () => {
                   value={caseData.anticoagulantRoute}
                   onChange={(e) => updateCase(caseData.id, 'anticoagulantRoute', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter route"
-                />
-              </div>
-            </div>
+      {/* Nursing Manpower Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-green-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Nursing Manpower</h2>
           )}
 
-          {caseData.anticoagulantType === 'non-pharmacological' && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Device</label>
               <select
@@ -1229,12 +1252,14 @@ const App: React.Component = () => {
         </div>
         <div className="p-6">
           <div className="mb-4">
-            <label className="flex items-center gap-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">No. Staff</label>
               <input
                 type="checkbox"
                 checked={caseData.mvConnected}
-                onChange={(e) => updateCase(caseData.id, 'mvConnected', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                value={nursingManpower.noStaff}
+                onChange={(e) => setNursingManpower({...nursingManpower, noStaff: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
               />
               <span className="text-sm font-medium text-gray-700">Patient connected to MV</span>
             </label>
@@ -1362,26 +1387,154 @@ const App: React.Component = () => {
             <div className="flex gap-4 items-end">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Enter MRN to search</label>
-                <input
+              <label className="block text-sm font-medium text-gray-700 mb-1">Orientee</label>
                   type="text"
                   value={searchMRN}
-                  onChange={(e) => setSearchMRN(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={nursingManpower.orientee}
+                onChange={(e) => setNursingManpower({...nursingManpower, orientee: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
                   placeholder="Enter MRN number"
                 />
               </div>
-              <button
-                onClick={searchAndFilter}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors no-pdf"
-              >
-                <Filter size={16} />
-                Filter
+              <label className="block text-sm font-medium text-gray-700 mb-1">Pull out staff</label>
+              <input
+                type="text"
+                value={nursingManpower.pullOutStaff}
+                onChange={(e) => setNursingManpower({...nursingManpower, pullOutStaff: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
+              />
               </button>
               <button
-                onClick={clearFilter}
+              <label className="block text-sm font-medium text-gray-700 mb-1">RC ICU Staff</label>
                 className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors no-pdf"
-              >
-                Clear
+                type="text"
+                value={nursingManpower.rcIcuStaff}
+                onChange={(e) => setNursingManpower({...nursingManpower, rcIcuStaff: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Float to ICU staff</label>
+              <input
+                type="text"
+                value={nursingManpower.floatToIcuStaff}
+                onChange={(e) => setNursingManpower({...nursingManpower, floatToIcuStaff: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">On Call</label>
+              <input
+                type="text"
+                value={nursingManpower.onCall}
+                onChange={(e) => setNursingManpower({...nursingManpower, onCall: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter number"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Census Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-purple-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Census</h2>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">No. Active Cases</label>
+              <input
+                type="text"
+                value={census.noActiveCases}
+                onChange={(e) => setCensus({...census, noActiveCases: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Admission</label>
+              <input
+                type="text"
+                value={census.admission}
+                onChange={(e) => setCensus({...census, admission: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Discharge</label>
+              <input
+                type="text"
+                value={census.discharge}
+                onChange={(e) => setCensus({...census, discharge: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Transfer out</label>
+              <input
+                type="text"
+                value={census.transferOut}
+                onChange={(e) => setCensus({...census, transferOut: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">DAMA</label>
+              <input
+                type="text"
+                value={census.dama}
+                onChange={(e) => setCensus({...census, dama: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Death</label>
+              <input
+                type="text"
+                value={census.death}
+                onChange={(e) => setCensus({...census, death: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Code Blue</label>
+              <input
+                type="text"
+                value={census.codeBlue}
+                onChange={(e) => setCensus({...census, codeBlue: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">No. of cases on CRRT</label>
+              <input
+                type="text"
+                value={census.casesOnCrrt}
+                onChange={(e) => setCensus({...census, casesOnCrrt: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">No. of cases on Hemodialysis</label>
+              <input
+                type="text"
+                value={census.casesOnHemodialysis}
+                onChange={(e) => setCensus({...census, casesOnHemodialysis: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter number"
               </button>
             </div>
           </div>
