@@ -1373,6 +1373,12 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4" id="report-content">
+        {/* Main Page Heading */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">ICU Shift Report</h1>
+          <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+        </div>
+
         {/* MRN Search Section */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
           <div className="bg-green-100 px-6 py-3 border-b">
