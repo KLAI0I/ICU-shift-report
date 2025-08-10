@@ -271,7 +271,7 @@ const App: React.FC = () => {
       .join('\n');
   };
 
-  const saveToCloud = async (data: PatientCase[]) => {
+  const saveToCloud = async (data: any) => {
     try {
       // This would integrate with Google Drive API
       // For now, we'll save to localStorage as backup
