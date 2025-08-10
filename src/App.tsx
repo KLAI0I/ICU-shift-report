@@ -1408,6 +1408,7 @@ const App: React.Component = () => {
                     <option value="Night Shift (7:00 PM - 7:00 AM)">Night Shift (7:00 PM - 7:00 AM)</option>
                   </select>
                 </div>
+                </div>
               </div>
             </div>
           </div>
