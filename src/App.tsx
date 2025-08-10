@@ -237,17 +237,8 @@ const App: React.Component = () => {
     }));
   };
 
-  const formatWithDots = (text: string) => {
-    if (!text.trim()) return text;
-    
-    const lines = text.split('\n');
-    return lines.map(line => {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith('•')) {
-        return `• ${trimmed}`;
-      }
-      return line; // Preserve empty lines and existing formatting
-    }).join('\n');
+  const formatTextWithBullets = (text: string) => {
+    return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
   };
 
   const saveToCloud = async (data: any) => {
@@ -1325,12 +1316,12 @@ const App: React.Component = () => {
           <textarea
             value={caseData.lastUpdates}
             onChange={(e) => {
-              const formatted = formatWithDots(e.target.value);
+              const formatted = formatTextWithBullets(e.target.value);
               updateCase(caseData.id, 'lastUpdates', formatted);
             }}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter last updates (each line will be automatically formatted with dots)"
+            placeholder="Enter last updates (bullets will be added automatically)"
           />
         </div>
       </div>
@@ -1344,12 +1335,12 @@ const App: React.Component = () => {
           <textarea
             value={caseData.plans}
             onChange={(e) => {
-              const formatted = formatWithDots(e.target.value);
+              const formatted = formatTextWithBullets(e.target.value);
               updateCase(caseData.id, 'plans', formatted);
             }}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter plans (each line will be automatically formatted with dots)"
+            placeholder="Enter treatment plans (bullets will be added automatically)"
           />
         </div>
       </div>
@@ -1392,70 +1383,6 @@ const App: React.Component = () => {
               >
                 Clear
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ICU Unit Handover Section */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="bg-red-100 px-6 py-3 border-b">
-            <h2 className="text-lg font-semibold text-gray-800">ICU Unit Handover</h2>
-          </div>
-          <div className="p-6">
-            {/* Staff Handover Information */}
-            <div className="mb-6">
-              <h3 className="text-md font-semibold text-gray-700 mb-4">Staff Handover Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Outgoing Nurse
-                  </label>
-                  <input
-                    type="text"
-                    value={cases[0]?.outgoingNurse || ''}
-                    onChange={(e) => updateCase(0, 'outgoingNurse', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter outgoing nurse name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Incoming Nurse
-                  </label>
-                  <input
-                    type="text"
-                    value={cases[0]?.incomingNurse || ''}
-                    onChange={(e) => updateCase(0, 'incomingNurse', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter incoming nurse name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Shift Date
-                  </label>
-                  <input
-                    type="date"
-                    value={cases[0]?.shiftDate || ''}
-                    onChange={(e) => updateCase(0, 'shiftDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Shift Time
-                  </label>
-                  <select
-                    value={cases[0]?.shiftTime || ''}
-                    onChange={(e) => updateCase(0, 'shiftTime', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select shift time</option>
-                    <option value="Day Shift (7:00 AM - 7:00 PM)">Day Shift (7:00 AM - 7:00 PM)</option>
-                    <option value="Night Shift (7:00 PM - 7:00 AM)">Night Shift (7:00 PM - 7:00 AM)</option>
-                  </select>
-                </div>
-              </div>
             </div>
           </div>
         </div>
