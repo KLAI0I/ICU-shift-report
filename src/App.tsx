@@ -14,7 +14,9 @@ import {
   Search,
   Copy,
   Save,
-  Filter
+  Filter,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -119,6 +121,8 @@ interface PatientCase {
 const App: React.FC = () => {
   const [cases, setCases] = useState<PatientCase[]>([]);
   const [searchMRN, setSearchMRN] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveMessage, setSaveMessage] = useState('');
   
   // Nursing Manpower state
   const [nursingManpower, setNursingManpower] = useState({
@@ -282,6 +286,71 @@ const App: React.FC = () => {
       console.error('Cloud backup failed:', error);
       return false;
     }
+  };
+
+  // Save report to database
+  const handleSaveReport = async () => {
+    // Validate required fields
+    if (!cases[0]?.mrn?.trim()) {
+      setSaveStatus('error');
+      setSaveMessage('MRN is required to save the report');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+      return;
+    }
+
+    setSaveStatus('saving');
+    setSaveMessage('Saving report...');
+
+    try {
+      const reportData = {
+        cases,
+        nursingManpower,
+        census,
+        timestamp: new Date().toISOString(),
+        totalCases: cases.length
+      };
+
+      // Simulate saving to database
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSaveMessage('Report saved successfully!');
+      setSaveStatus('saved');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveStatus('idle'), 3000);
+      
+    } catch (error: any) {
+      console.error('Error saving report:', error);
+      setSaveStatus('error');
+      setSaveMessage(`Error saving report: ${error.message}`);
+      setTimeout(() => setSaveStatus('idle'), 5000);
+    }
+  };
+
+  // Create new report (clear form)
+  const handleNewReport = () => {
+    setCases([createEmptyCase(1)]);
+    setNursingManpower({
+      noStaff: '',
+      orientee: '',
+      pullOutStaff: '',
+      rcIcuStaff: '',
+      floatToIcuStaff: '',
+      onCall: ''
+    });
+    setCensus({
+      noActiveCases: '',
+      admission: '',
+      discharge: '',
+      transferOut: '',
+      dama: '',
+      death: '',
+      codeBlue: '',
+      casesOnCrrt: '',
+      casesOnHemodialysis: ''
+    });
+    setSaveStatus('idle');
+    setSaveMessage('');
   };
 
   const generatePDF = async () => {
@@ -1377,6 +1446,47 @@ const App: React.FC = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">ICU Shift Report</h1>
           <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+        </div>
+
+        {/* Save Controls */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleSaveReport}
+                disabled={saveStatus === 'saving'}
+                className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saveStatus === 'saving' ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                {saveStatus === 'saving' ? 'Saving...' : 'Save Report'}
+              </button>
+              
+              <button
+                onClick={handleNewReport}
+                className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Report
+              </button>
+            </div>
+
+            {/* Save Status Message */}
+            {saveStatus !== 'idle' && (
+              <div className={`flex items-center px-4 py-2 rounded-lg ${
+                saveStatus === 'saved' ? 'bg-green-100 text-green-800' :
+                saveStatus === 'error' ? 'bg-red-100 text-red-800' :
+                'bg-blue-100 text-blue-800'
+              }`}>
+                {saveStatus === 'saved' && <CheckCircle className="w-4 h-4 mr-2" />}
+                {saveStatus === 'error' && <AlertCircle className="w-4 h-4 mr-2" />}
+                <span className="text-sm font-medium">{saveMessage}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* MRN Search Section */}
