@@ -225,12 +225,12 @@ const App: React.FC = () => {
     setCases(cases.map(caseItem => 
       caseItem.id === caseId ? { ...caseItem, [field]: value } : caseItem
     ));
-  };
+      const margin = 8; // Reduced margin for more content space
 
   const updateCaseArray = (caseId: string, field: string, index: number, itemField: string, value: any) => {
     setCases(cases.map(caseItem => {
       if (caseItem.id === caseId) {
-        const updatedArray = [...(caseItem[field as keyof PatientCase] as any[])];
+      const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height) * 0.9; // Increased scale
         updatedArray[index] = { ...updatedArray[index], [itemField]: value };
         return { ...caseItem, [field]: updatedArray };
       }
@@ -261,17 +261,15 @@ const App: React.FC = () => {
   };
 
   const formatTextWithBullets = (text: string) => {
-    return text.split('\n')
+    return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
+  };
+
       .map(line => {
         const trimmed = line.trim();
         if (!trimmed) return '';
         return trimmed.startsWith('•') ? trimmed : `• ${trimmed}`;
       })
       .filter(line => line !== '')
-      .join('\n');
-  };
-
-  const saveToCloud = async (data: any) => {
     try {
       // This would integrate with Google Drive API
       // For now, we'll save to localStorage as backup
