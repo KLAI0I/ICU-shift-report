@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Heart, FileText, Clock, Users, Activity, Plus, Trash2 } from 'lucide-react';
+import { Heart, FileText, Clock, Users, Activity, Plus, Trash2, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface InvasiveLine {
   id: string;
@@ -94,6 +96,10 @@ function App() {
     { id: '1', antibioticName: '', doseFrequency: '', startAt: '', endAt: '' }
   ]);
 
+  const [hamMedications, setHamMedications] = useState([
+    { medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' }
+  ]);
+
   const [cultureSensitivities, setCultureSensitivities] = useState<CultureSensitivity[]>([
     { id: '1', dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' }
   ]);
@@ -172,6 +178,16 @@ function App() {
     ));
   };
 
+  const addHamMedication = () => {
+    setHamMedications([...hamMedications, { medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' }]);
+  };
+
+  const removeHamMedication = (index: number) => {
+    if (hamMedications.length > 1) {
+      setHamMedications(hamMedications.filter((_, i) => i !== index));
+    }
+  };
+
   // Culture & Sensitivity functions
   const addCultureSensitivity = () => {
     const newId = (cultureSensitivities.length + 1).toString();
@@ -192,13 +208,97 @@ function App() {
     ));
   };
 
-  const generatePDF = () => {
-    // This would integrate with a PDF generation library
-    alert('PDF generation feature will be implemented with a proper PDF library');
+  const generatePDF = async () => {
+    const element = document.getElementById('icu-report-form');
+    if (!element) return;
+
+    try {
+      // Create a clone of the element to modify for PDF
+      const clone = element.cloneNode(true) as HTMLElement;
+      
+      // Remove buttons and interactive elements from clone
+      const buttons = clone.querySelectorAll('button');
+      buttons.forEach(button => button.remove());
+      
+      // Ensure all text areas show their full content
+      const textareas = clone.querySelectorAll('textarea');
+      textareas.forEach((textarea, index) => {
+        const originalTextarea = element.querySelectorAll('textarea')[index] as HTMLTextAreaElement;
+        const div = document.createElement('div');
+        div.className = textarea.className;
+        div.style.minHeight = 'auto';
+        div.style.height = 'auto';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.wordBreak = 'break-word';
+        div.textContent = originalTextarea.value;
+        textarea.parentNode?.replaceChild(div, textarea);
+      });
+
+      // Temporarily add clone to document
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '210mm'; // A4 width
+      document.body.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: clone.scrollWidth,
+        height: clone.scrollHeight
+      });
+
+      // Remove clone
+      document.body.removeChild(clone);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 0;
+
+      // If content is too long, split into multiple pages
+      const totalPages = Math.ceil((imgHeight * ratio) / pdfHeight);
+      
+      for (let i = 0; i < totalPages; i++) {
+        if (i > 0) pdf.addPage();
+        
+        const sourceY = i * (pdfHeight / ratio);
+        const sourceHeight = Math.min(imgHeight - sourceY, pdfHeight / ratio);
+        
+        if (sourceHeight > 0) {
+          pdf.addImage(
+            imgData,
+            'PNG',
+            imgX,
+            imgY,
+            imgWidth * ratio,
+            sourceHeight * ratio,
+            undefined,
+            'FAST',
+            0,
+            -sourceY * ratio
+          );
+        }
+      }
+
+      const fileName = `ICU_Shift_Report_${formData.patientName || 'Patient'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-4" id="icu-report-form">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm mb-6 p-6 border-l-4 border-blue-600">
@@ -808,6 +908,132 @@ function App() {
             </div>
           </div>
 
+          {/* High Alert Medications (HAM) Section */}
+          <div className="bg-blue-200 px-6 py-2">
+            <h3 className="font-semibold">High Alert Medications (HAM)</h3>
+          </div>
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Medication Name</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Dose</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Frequency</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Route</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Date</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Time</th>
+                    {hamMedications.length > 1 && (
+                      <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {hamMedications.map((ham, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          value={ham.medicationName}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].medicationName = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                          placeholder="Enter medication name"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          value={ham.dose}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].dose = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                          placeholder="Enter dose"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          value={ham.frequency}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].frequency = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                          placeholder="Enter frequency"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="text"
+                          value={ham.route}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].route = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                          placeholder="Enter route"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="date"
+                          value={ham.startDate}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].startDate = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        />
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        <input
+                          type="time"
+                          value={ham.startTime}
+                          onChange={(e) => {
+                            const updated = [...hamMedications];
+                            updated[index].startTime = e.target.value;
+                            setHamMedications(updated);
+                          }}
+                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        />
+                      </td>
+                      {hamMedications.length > 1 && (
+                        <td className="border border-gray-300 px-2 py-1 text-center">
+                          <button
+                            onClick={() => removeHamMedication(index)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Remove HAM medication"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={addHamMedication}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add HAM Medication</span>
+              </button>
+            </div>
+          </div>
+
           {/* Scheduled Tasks and Diet Section */}
           <div className="grid grid-cols-2 gap-0">
             {/* Scheduled Tasks */}
@@ -1131,9 +1357,10 @@ function App() {
             <div className="flex space-x-4">
               <button 
                 onClick={generatePDF}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
               >
-                Save Report as PDF
+                <Download className="h-4 w-4" />
+                <span>Save Report as PDF</span>
               </button>
               <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition-colors">
                 Print
@@ -1144,6 +1371,11 @@ function App() {
               Last saved: Never
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center py-6 text-gray-600">
+          <p className="text-sm">Designed By Mr. Mohamed Ghonim</p>
         </div>
       </div>
     </div>
