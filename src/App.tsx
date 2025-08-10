@@ -1451,11 +1451,11 @@ const App: React.FC = () => {
         {/* Save Controls */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={handleSaveReport}
                 disabled={saveStatus === 'saving'}
-                className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-base font-medium"
               >
                 {saveStatus === 'saving' ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -1467,14 +1467,12 @@ const App: React.FC = () => {
               
               <button
                 onClick={handleNewReport}
-                className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base font-medium"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <FileText className="w-4 h-4 mr-2" />
                 New Report
               </button>
-            </div>
-
-            {/* Save Status Message */}
+              
             {saveStatus !== 'idle' && (
               <div className={`flex items-center px-4 py-2 rounded-lg ${
                 saveStatus === 'saved' ? 'bg-green-100 text-green-800' :
@@ -1509,19 +1507,11 @@ const App: React.FC = () => {
                   placeholder="Enter MRN number"
                 />
               </div>
-              <button
+                className="flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-base font-medium"
                 onClick={searchAndFilter}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors no-pdf"
+                <Download className="w-4 h-4 mr-2" />
               >
                 <Filter size={16} />
-                Search
-              </button>
-              <button
-                onClick={clearFilter}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors no-pdf"
-              >
-                Clear
-              </button>
             </div>
           </div>
         </div>
