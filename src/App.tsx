@@ -262,13 +262,14 @@ const App: React.FC = () => {
 
   const formatTextWithBullets = (text: string) => {
     return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
-        .map(line => {
+  };
+
+      .map(line => {
         const trimmed = line.trim();
         if (!trimmed) return '';
         return trimmed.startsWith('•') ? trimmed : `• ${trimmed}`;
       })
       .filter(line => line !== '')
-  };
     try {
       // This would integrate with Google Drive API
       // For now, we'll save to localStorage as backup
