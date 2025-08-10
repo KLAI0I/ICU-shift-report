@@ -1402,6 +1402,53 @@ const App: React.Component = () => {
             <h2 className="text-lg font-semibold text-gray-800">ICU Unit Handover</h2>
           </div>
           <div className="p-6">
+            {/* Staff Handover Information */}
+            <div className="mb-6">
+              <h3 className="text-md font-semibold text-gray-700 mb-4">Staff Handover Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Outgoing Nurse
+                  </label>
+                  <input
+                    type="text"
+                    value={cases[0]?.outgoingNurse || ''}
+                    onChange={(e) => updateCase(0, 'outgoingNurse', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter outgoing nurse name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Incoming Nurse
+                  </label>
+                  <input
+                    type="text"
+                    value={cases[0]?.incomingNurse || ''}
+                    onChange={(e) => updateCase(0, 'incomingNurse', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter incoming nurse name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Shift Date
+                  </label>
+                  <input
+                    type="date"
+                    value={cases[0]?.shiftDate || ''}
+                    onChange={(e) => updateCase(0, 'shiftDate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Shift Time
+                  </label>
+                  <select
+                    value={cases[0]?.shiftTime || ''}
+                    onChange={(e) => updateCase(0, 'shiftTime', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select shift time</option>
                     <option value="Day Shift (7:00 AM - 7:00 PM)">Day Shift (7:00 AM - 7:00 PM)</option>
