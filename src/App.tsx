@@ -1410,7 +1410,6 @@ const App: React.Component = () => {
                 </div>
               </div>
             </div>
-            </div>
           </div>
         </div>
 
