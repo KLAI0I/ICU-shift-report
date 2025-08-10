@@ -16,7 +16,8 @@ import {
   Save,
   Filter,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -1473,6 +1474,7 @@ const App: React.FC = () => {
                 New Report
               </button>
               
+            </div>
             {saveStatus !== 'idle' && (
               <div className={`flex items-center px-4 py-2 rounded-lg ${
                 saveStatus === 'saved' ? 'bg-green-100 text-green-800' :
@@ -1507,11 +1509,19 @@ const App: React.FC = () => {
                   placeholder="Enter MRN number"
                 />
               </div>
-                className="flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-base font-medium"
+              <button
+                className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-medium"
                 onClick={searchAndFilter}
-                <Download className="w-4 h-4 mr-2" />
               >
                 <Filter size={16} />
+                Search
+              </button>
+              <button
+                className="flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-base font-medium"
+                onClick={clearFilter}
+              >
+                Clear
+              </button>
             </div>
           </div>
         </div>
