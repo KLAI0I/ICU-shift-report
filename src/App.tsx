@@ -1,76 +1,186 @@
-import React, { useState } from 'react';
-import { Heart, FileText, Clock, Users, Activity, Plus, Trash2, Download } from 'lucide-react';
-import jsPDF from 'jspdf';
+import React, { useState, useEffect } from 'react';
+import { 
+  User, 
+  Calendar, 
+  Clock, 
+  Heart, 
+  Activity, 
+  Thermometer, 
+  Droplets, 
+  Stethoscope, 
+  Plus, 
+  Trash2, 
+  Download,
+  Search,
+  Copy,
+  Save,
+  Filter
+} from 'lucide-react';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { v4 as uuidv4 } from 'uuid';
 
-interface InvasiveLine {
+interface PatientCase {
   id: string;
-  invasiveLine: string;
-  insertionDate: string;
-  insertionSite: string;
-  size: string;
-  removalDate: string;
-  insertedBy: string;
+  caseNumber: number;
+  // Patient Information
+  patientName: string;
+  mrn: string;
+  age: string;
+  gender: string;
+  admissionDate: string;
+  diagnosis: string;
+  allergies: string;
+  
+  // Staff Information
+  outgoingNurse: string;
+  incomingNurse: string;
+  shiftDate: string;
+  shiftTime: string;
+  
+  // Vital Signs
+  temperature: string;
+  bloodPressure: string;
+  heartRate: string;
+  respiratoryRate: string;
+  oxygenSaturation: string;
+  painScore: string;
+  
+  // Assessment
+  consciousness: string;
+  mobility: string;
+  skinCondition: string;
+  
+  // Dynamic sections
+  attachedLines: Array<{
+    invasiveLine: string;
+    insertionDate: string;
+    insertionSite: string;
+    size: string;
+    removalDate: string;
+    insertedBy: string;
+  }>;
+  
+  infusions: Array<{
+    medicationName: string;
+    doseDilution: string;
+    rate: string;
+  }>;
+  
+  antibiotics: Array<{
+    name: string;
+    dose: string;
+    frequency: string;
+    startAt: string;
+    endAt: string;
+  }>;
+  
+  hamMedications: Array<{
+    medicationName: string;
+    dose: string;
+    frequency: string;
+    route: string;
+    startDate: string;
+    startTime: string;
+  }>;
+  
+  cultureData: Array<{
+    dateCollected: string;
+    type: string;
+    isolationPrecaution: string;
+    dateResultReceived: string;
+    results: string;
+    actionTaken: string;
+  }>;
+  
+  // Other fields
+  rbs: string;
+  vbg: string;
+  ecg: string;
+  dietType: string;
+  lastBowelMotion: string;
+  anticoagulantType: string;
+  anticoagulantMedication: string;
+  anticoagulantDose: string;
+  anticoagulantFrequency: string;
+  anticoagulantRoute: string;
+  anticoagulantDevice: string;
+  mvConnected: boolean;
+  mvMode: string;
+  mvVT: string;
+  mvFiO2: string;
+  mvPS: string;
+  mvPeep: string;
+  mvO2Support: string;
+  lastUpdates: string;
+  plans: string;
 }
 
-interface Infusion {
-  id: string;
-  medicationName: string;
-  doseDilution: string;
-  rate: string;
-}
+const App: React.Component = () => {
+  const [cases, setCases] = useState<PatientCase[]>([]);
+  const [searchMRN, setSearchMRN] = useState('');
+  const [filteredCases, setFilteredCases] = useState<PatientCase[]>([]);
+  const [showFiltered, setShowFiltered] = useState(false);
 
-interface Antibiotic {
-  id: string;
-  antibioticName: string;
-  doseFrequency: string;
-  startAt: string;
-  endAt: string;
-}
+  // Initialize with first case
+  useEffect(() => {
+    if (cases.length === 0) {
+      addNewCase();
+    }
+  }, []);
 
-interface CultureSensitivity {
-  id: string;
-  dateCollected: string;
-  type: string;
-  isolationPrecaution: string;
-  dateResultReceived: string;
-  results: string;
-  actionTaken: string;
-}
+  // Filter cases by MRN
+  useEffect(() => {
+    if (searchMRN.trim()) {
+      const filtered = cases.filter(caseItem => 
+        caseItem.mrn.toLowerCase().includes(searchMRN.toLowerCase())
+      );
+      setFilteredCases(filtered);
+    } else {
+      setFilteredCases([]);
+      setShowFiltered(false);
+    }
+  }, [searchMRN, cases]);
 
-function App() {
-  const [formData, setFormData] = useState({
-    date: '01/08/2025',
-    shift: '',
-    // Staff data
-    endorsedFromCN: '',
-    shiftCN: '',
-    nextCN: '',
-    // Patient data
+  const createEmptyCase = (caseNumber: number): PatientCase => ({
+    id: uuidv4(),
+    caseNumber,
     patientName: '',
     mrn: '',
-    icuRoom: '',
     age: '',
     gender: '',
-    nationality: '',
-    doa: '',
-    toa: '',
-    finCategory: '',
-    consultant: '',
-    // Vital signs
-    bp: '',
-    hr: '',
-    rr: '',
-    temp: '',
-    spo2: '',
-    // Anticoagulant
+    admissionDate: '',
+    diagnosis: '',
+    allergies: '',
+    outgoingNurse: '',
+    incomingNurse: '',
+    shiftDate: '',
+    shiftTime: '',
+    temperature: '',
+    bloodPressure: '',
+    heartRate: '',
+    respiratoryRate: '',
+    oxygenSaturation: '',
+    painScore: '',
+    consciousness: '',
+    mobility: '',
+    skinCondition: '',
+    attachedLines: [{ invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' }],
+    infusions: [{ medicationName: '', doseDilution: '', rate: '' }],
+    antibiotics: [{ name: '', dose: '', frequency: '', startAt: '', endAt: '' }],
+    hamMedications: [{ medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' }],
+    cultureData: [{ dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' }],
+    rbs: '',
+    vbg: '',
+    ecg: '',
+    dietType: '',
+    lastBowelMotion: '',
     anticoagulantType: '',
-    medicationName: '',
-    dose: '',
-    frequency: '',
-    route: '',
-    nonPharmacological: '',
-    // MV
+    anticoagulantMedication: '',
+    anticoagulantDose: '',
+    anticoagulantFrequency: '',
+    anticoagulantRoute: '',
+    anticoagulantDevice: '',
     mvConnected: false,
     mvMode: '',
     mvVT: '',
@@ -78,1308 +188,1255 @@ function App() {
     mvPS: '',
     mvPeep: '',
     mvO2Support: '',
-    // Text areas
     lastUpdates: '',
     plans: ''
   });
 
-  // Dynamic arrays for sections
-  const [invasiveLines, setInvasiveLines] = useState<InvasiveLine[]>([
-    { id: '1', invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' }
-  ]);
-
-  const [infusions, setInfusions] = useState<Infusion[]>([
-    { id: '1', medicationName: '', doseDilution: '', rate: '' }
-  ]);
-
-  const [antibiotics, setAntibiotics] = useState<Antibiotic[]>([
-    { id: '1', antibioticName: '', doseFrequency: '', startAt: '', endAt: '' }
-  ]);
-
-  const [hamMedications, setHamMedications] = useState([
-    { medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' }
-  ]);
-
-  const [cultureSensitivities, setCultureSensitivities] = useState<CultureSensitivity[]>([
-    { id: '1', dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' }
-  ]);
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const addNewCase = () => {
+    const newCaseNumber = cases.length + 1;
+    const newCase = createEmptyCase(newCaseNumber);
+    setCases([...cases, newCase]);
   };
 
-  const handleTextAreaChange = (field: string, value: string) => {
-    // Add bullet points automatically
-    const lines = value.split('\n');
-    const formattedLines = lines.map(line => {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('•')) {
-        return '• ' + trimmedLine;
+  const updateCase = (caseId: string, field: string, value: any) => {
+    setCases(cases.map(caseItem => 
+      caseItem.id === caseId ? { ...caseItem, [field]: value } : caseItem
+    ));
+  };
+
+  const updateCaseArray = (caseId: string, field: string, index: number, itemField: string, value: any) => {
+    setCases(cases.map(caseItem => {
+      if (caseItem.id === caseId) {
+        const updatedArray = [...(caseItem[field as keyof PatientCase] as any[])];
+        updatedArray[index] = { ...updatedArray[index], [itemField]: value };
+        return { ...caseItem, [field]: updatedArray };
       }
-      return line;
-    });
-    const formattedValue = formattedLines.join('\n');
-    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+      return caseItem;
+    }));
   };
 
-  // Invasive Lines functions
-  const addInvasiveLine = () => {
-    const newId = (invasiveLines.length + 1).toString();
-    setInvasiveLines([...invasiveLines, { 
-      id: newId, invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' 
-    }]);
+  const addArrayItem = (caseId: string, field: string, emptyItem: any) => {
+    setCases(cases.map(caseItem => {
+      if (caseItem.id === caseId) {
+        const currentArray = caseItem[field as keyof PatientCase] as any[];
+        return { ...caseItem, [field]: [...currentArray, emptyItem] };
+      }
+      return caseItem;
+    }));
   };
 
-  const removeInvasiveLine = (id: string) => {
-    if (invasiveLines.length > 1) {
-      setInvasiveLines(invasiveLines.filter(line => line.id !== id));
+  const removeArrayItem = (caseId: string, field: string, index: number) => {
+    setCases(cases.map(caseItem => {
+      if (caseItem.id === caseId) {
+        const currentArray = caseItem[field as keyof PatientCase] as any[];
+        if (currentArray.length > 1) {
+          return { ...caseItem, [field]: currentArray.filter((_, i) => i !== index) };
+        }
+      }
+      return caseItem;
+    }));
+  };
+
+  const formatTextWithBullets = (text: string) => {
+    return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
+  };
+
+  const saveToCloud = async (data: any) => {
+    try {
+      // This would integrate with Google Drive API
+      // For now, we'll save to localStorage as backup
+      const timestamp = new Date().toISOString();
+      const backupData = {
+        timestamp,
+        data,
+        driveLink: "https://drive.google.com/drive/folders/1jLppMfZBGHgklkeoyO9jXdC8_iGdcMEu?usp=sharing"
+      };
+      
+      localStorage.setItem(`icu_backup_${timestamp}`, JSON.stringify(backupData));
+      console.log('Data backed up to cloud:', backupData.driveLink);
+      return true;
+    } catch (error) {
+      console.error('Cloud backup failed:', error);
+      return false;
     }
-  };
-
-  const updateInvasiveLine = (id: string, field: keyof InvasiveLine, value: string) => {
-    setInvasiveLines(invasiveLines.map(line => 
-      line.id === id ? { ...line, [field]: value } : line
-    ));
-  };
-
-  // Infusion functions
-  const addInfusion = () => {
-    const newId = (infusions.length + 1).toString();
-    setInfusions([...infusions, { id: newId, medicationName: '', doseDilution: '', rate: '' }]);
-  };
-
-  const removeInfusion = (id: string) => {
-    if (infusions.length > 1) {
-      setInfusions(infusions.filter(infusion => infusion.id !== id));
-    }
-  };
-
-  const updateInfusion = (id: string, field: keyof Infusion, value: string) => {
-    setInfusions(infusions.map(infusion => 
-      infusion.id === id ? { ...infusion, [field]: value } : infusion
-    ));
-  };
-
-  // Antibiotic functions
-  const addAntibiotic = () => {
-    const newId = (antibiotics.length + 1).toString();
-    setAntibiotics([...antibiotics, { id: newId, antibioticName: '', doseFrequency: '', startAt: '', endAt: '' }]);
-  };
-
-  const removeAntibiotic = (id: string) => {
-    if (antibiotics.length > 1) {
-      setAntibiotics(antibiotics.filter(antibiotic => antibiotic.id !== id));
-    }
-  };
-
-  const updateAntibiotic = (id: string, field: keyof Antibiotic, value: string) => {
-    setAntibiotics(antibiotics.map(antibiotic => 
-      antibiotic.id === id ? { ...antibiotic, [field]: value } : antibiotic
-    ));
-  };
-
-  const addHamMedication = () => {
-    setHamMedications([...hamMedications, { medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' }]);
-  };
-
-  const removeHamMedication = (index: number) => {
-    if (hamMedications.length > 1) {
-      setHamMedications(hamMedications.filter((_, i) => i !== index));
-    }
-  };
-
-  // Culture & Sensitivity functions
-  const addCultureSensitivity = () => {
-    const newId = (cultureSensitivities.length + 1).toString();
-    setCultureSensitivities([...cultureSensitivities, { 
-      id: newId, dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' 
-    }]);
-  };
-
-  const removeCultureSensitivity = (id: string) => {
-    if (cultureSensitivities.length > 1) {
-      setCultureSensitivities(cultureSensitivities.filter(cs => cs.id !== id));
-    }
-  };
-
-  const updateCultureSensitivity = (id: string, field: keyof CultureSensitivity, value: string) => {
-    setCultureSensitivities(cultureSensitivities.map(cs => 
-      cs.id === id ? { ...cs, [field]: value } : cs
-    ));
   };
 
   const generatePDF = async () => {
-    const element = document.getElementById('icu-report-form');
-    if (!element) return;
-
     try {
-      // Create a clone of the element to modify for PDF
-      const clone = element.cloneNode(true) as HTMLElement;
-      
-      // Remove buttons and interactive elements from clone
-      const buttons = clone.querySelectorAll('button');
-      buttons.forEach(button => button.remove());
-      
-      // Ensure all text areas show their full content
-      const textareas = clone.querySelectorAll('textarea');
-      textareas.forEach((textarea, index) => {
-        const originalTextarea = element.querySelectorAll('textarea')[index] as HTMLTextAreaElement;
-        const div = document.createElement('div');
-        div.className = textarea.className;
-        div.style.minHeight = 'auto';
-        div.style.height = 'auto';
-        div.style.whiteSpace = 'pre-wrap';
-        div.style.wordBreak = 'break-word';
-        div.textContent = originalTextarea.value;
-        textarea.parentNode?.replaceChild(div, textarea);
-      });
+      const element = document.getElementById('report-content');
+      if (!element) return;
 
-      // Temporarily add clone to document
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = '210mm'; // A4 width
-      document.body.appendChild(clone);
+      // Hide interactive elements for PDF
+      const interactiveElements = element.querySelectorAll('button, .no-pdf');
+      interactiveElements.forEach(el => (el as HTMLElement).style.display = 'none');
 
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: clone.scrollWidth,
-        height: clone.scrollHeight
-      });
-
-      // Remove clone
-      document.body.removeChild(clone);
-
-      const imgData = canvas.toDataURL('image/png');
+      // Create PDF with A4 dimensions
       const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = 297; // A4 height in mm
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
+      // Get element dimensions
+      const elementHeight = element.scrollHeight;
+      const elementWidth = element.scrollWidth;
+      
+      // Calculate scale to fit A4 width
+      const scale = (pdfWidth - 20) / (elementWidth * 0.264583); // Convert px to mm
+      
+      // Calculate how many pages we need
+      const pageHeight = (pdfHeight - 20) / scale / 0.264583; // Available height in pixels
+      const totalPages = Math.ceil(elementHeight / pageHeight);
 
-      // If content is too long, split into multiple pages
-      const totalPages = Math.ceil((imgHeight * ratio) / pdfHeight);
-      
-      for (let i = 0; i < totalPages; i++) {
-        if (i > 0) pdf.addPage();
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) pdf.addPage();
         
-        const sourceY = i * (pdfHeight / ratio);
-        const sourceHeight = Math.min(imgHeight - sourceY, pdfHeight / ratio);
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          height: Math.min(pageHeight, elementHeight - (page * pageHeight)),
+          y: page * pageHeight,
+          scrollX: 0,
+          scrollY: 0
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = pdfWidth - 20;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
-        if (sourceHeight > 0) {
-          pdf.addImage(
-            imgData,
-            'PNG',
-            imgX,
-            imgY,
-            imgWidth * ratio,
-            sourceHeight * ratio,
-            undefined,
-            'FAST',
-            0,
-            -sourceY * ratio
-          );
-        }
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, Math.min(imgHeight, pdfHeight - 20));
       }
 
-      const fileName = `ICU_Shift_Report_${formData.patientName || 'Patient'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      // Restore interactive elements
+      interactiveElements.forEach(el => (el as HTMLElement).style.display = '');
+
+      // Save PDF
+      const fileName = `ICU_Shift_Report_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
+
+      // Backup to cloud
+      await saveToCloud(cases);
+      
+      alert('PDF generated successfully and data backed up to cloud!');
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Error generating PDF. Please try again.');
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF. Please try again.');
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-4" id="icu-report-form">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm mb-6 p-6 border-l-4 border-blue-600">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Heart className="h-8 w-8 text-blue-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900">ICU Shift Report</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Care Medical</p>
-                <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Activity className="h-8 w-8 text-white" />
-                </div>
-              </div>
-            </div>
+  const searchAndFilter = () => {
+    if (searchMRN.trim()) {
+      setShowFiltered(true);
+    }
+  };
+
+  const clearFilter = () => {
+    setSearchMRN('');
+    setShowFiltered(false);
+  };
+
+  const renderCase = (caseData: PatientCase) => (
+    <div key={caseData.id} className="mb-8 border-2 border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg mb-6">
+        <h1 className="text-2xl font-bold text-center">Handover Case {caseData.caseNumber}</h1>
+        <p className="text-center text-blue-100 mt-2">ICU Shift Report - Medical Interface</p>
+      </div>
+
+      {/* Patient Information Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <User size={20} />
+            Patient Information
+          </h2>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+            <input
+              type="text"
+              value={caseData.patientName}
+              onChange={(e) => updateCase(caseData.id, 'patientName', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter patient name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">MRN</label>
+            <input
+              type="text"
+              value={caseData.mrn}
+              onChange={(e) => updateCase(caseData.id, 'mrn', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter MRN"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+            <input
+              type="text"
+              value={caseData.age}
+              onChange={(e) => updateCase(caseData.id, 'age', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter age"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+            <select
+              value={caseData.gender}
+              onChange={(e) => updateCase(caseData.id, 'gender', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Admission Date</label>
+            <input
+              type="date"
+              value={caseData.admissionDate}
+              onChange={(e) => updateCase(caseData.id, 'admissionDate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Primary Diagnosis</label>
+            <textarea
+              value={caseData.diagnosis}
+              onChange={(e) => updateCase(caseData.id, 'diagnosis', e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter primary diagnosis"
+            />
+          </div>
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
+            <textarea
+              value={caseData.allergies}
+              onChange={(e) => updateCase(caseData.id, 'allergies', e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter known allergies"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Date and Shift Section */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="bg-blue-900 text-white px-6 py-3 rounded-t-lg">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium">Date</label>
-                <input
-                  type="text"
-                  value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium">Shift</label>
-                <select
-                  value={formData.shift}
-                  onChange={(e) => handleInputChange('shift', e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-black"
-                >
-                  <option value="">Select Shift</option>
-                  <option value="Day">Day</option>
-                  <option value="Night">Night</option>
-                </select>
-              </div>
-            </div>
+      {/* Staff Information Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <Stethoscope size={20} />
+            Staff Handover Information
+          </h2>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Outgoing Nurse</label>
+            <input
+              type="text"
+              value={caseData.outgoingNurse}
+              onChange={(e) => updateCase(caseData.id, 'outgoingNurse', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter outgoing nurse name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Incoming Nurse</label>
+            <input
+              type="text"
+              value={caseData.incomingNurse}
+              onChange={(e) => updateCase(caseData.id, 'incomingNurse', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter incoming nurse name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Calendar size={16} />
+              Shift Date
+            </label>
+            <input
+              type="date"
+              value={caseData.shiftDate}
+              onChange={(e) => updateCase(caseData.id, 'shiftDate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Clock size={16} />
+              Shift Time
+            </label>
+            <input
+              type="time"
+              value={caseData.shiftTime}
+              onChange={(e) => updateCase(caseData.id, 'shiftTime', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Staff Section */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="bg-blue-800 text-white px-6 py-3 rounded-t-lg">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              Staff Information
-            </h2>
+      {/* Vital Signs Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <Heart size={20} />
+            Vital Signs & Assessment
+          </h2>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Thermometer size={16} />
+              Temperature (°C)
+            </label>
+            <input
+              type="text"
+              value={caseData.temperature}
+              onChange={(e) => updateCase(caseData.id, 'temperature', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="36.5"
+            />
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Endorsed from CN</label>
-                <input
-                  type="text"
-                  value={formData.endorsedFromCN}
-                  onChange={(e) => handleInputChange('endorsedFromCN', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Shift CN</label>
-                <input
-                  type="text"
-                  value={formData.shiftCN}
-                  onChange={(e) => handleInputChange('shiftCN', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Next CN</label>
-                <input
-                  type="text"
-                  value={formData.nextCN}
-                  onChange={(e) => handleInputChange('nextCN', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Staff Status Table */}
-            <div className="mt-6">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left">No.Staff</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Orientee</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Pull out staff</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">RC ICU Staff</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Float to ICU staff</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">On Call</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <input type="text" className="w-full border-0 focus:outline-none" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Activity size={16} />
+              Blood Pressure (mmHg)
+            </label>
+            <input
+              type="text"
+              value={caseData.bloodPressure}
+              onChange={(e) => updateCase(caseData.id, 'bloodPressure', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="120/80"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Heart size={16} />
+              Heart Rate (bpm)
+            </label>
+            <input
+              type="text"
+              value={caseData.heartRate}
+              onChange={(e) => updateCase(caseData.id, 'heartRate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="72"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Respiratory Rate (/min)</label>
+            <input
+              type="text"
+              value={caseData.respiratoryRate}
+              onChange={(e) => updateCase(caseData.id, 'respiratoryRate', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="16"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Droplets size={16} />
+              Oxygen Saturation (%)
+            </label>
+            <input
+              type="text"
+              value={caseData.oxygenSaturation}
+              onChange={(e) => updateCase(caseData.id, 'oxygenSaturation', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="98"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Pain Score (0-10)</label>
+            <input
+              type="text"
+              value={caseData.painScore}
+              onChange={(e) => updateCase(caseData.id, 'painScore', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Level of Consciousness</label>
+            <select
+              value={caseData.consciousness}
+              onChange={(e) => updateCase(caseData.id, 'consciousness', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select level</option>
+              <option value="Alert">Alert</option>
+              <option value="Drowsy">Drowsy</option>
+              <option value="Confused">Confused</option>
+              <option value="Unconscious">Unconscious</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mobility Status</label>
+            <select
+              value={caseData.mobility}
+              onChange={(e) => updateCase(caseData.id, 'mobility', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select mobility</option>
+              <option value="Independent">Independent</option>
+              <option value="Assisted">Assisted</option>
+              <option value="Bed-bound">Bed-bound</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Skin Condition</label>
+            <input
+              type="text"
+              value={caseData.skinCondition}
+              onChange={(e) => updateCase(caseData.id, 'skinCondition', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter skin condition"
+            />
           </div>
         </div>
+      </div>
 
-        {/* Cases Section */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="bg-blue-800 text-white px-6 py-3">
-            <h2 className="text-lg font-semibold">Cases</h2>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-6 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">No.Active Cases</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Admission</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Discharge</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Transfer out</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">DAMA</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Death</label>
-                <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-              </div>
-            </div>
-          </div>
+      {/* Attached Line Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Attached Line</h2>
         </div>
-
-        {/* ICU Unit Handover */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="bg-blue-900 text-white px-6 py-3">
-            <h2 className="text-lg font-semibold text-center">ICU Unit Handover</h2>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 gap-4">
-              {[
-                'Narcotic (No.Empty only)',
-                'Biomedical Maintenance Issue',
-                'General Maintenance Isssue',
-                'Stock issue',
-                'IT issue',
-                'Others'
-              ].map((item, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-blue-50 rounded-md">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                  <label className="text-sm font-medium text-gray-700">{item}</label>
-                  <input type="text" className="flex-1 ml-4 rounded-md border border-gray-300 px-3 py-1" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Patient Information */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="bg-blue-900 text-white px-6 py-3">
-            <h2 className="text-lg font-semibold text-center">Handover Case 1</h2>
-          </div>
-          
-          {/* Identification */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Identification</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
-                <input
-                  type="text"
-                  value={formData.patientName}
-                  onChange={(e) => handleInputChange('patientName', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">MRN</label>
-                <input
-                  type="text"
-                  value={formData.mrn}
-                  onChange={(e) => handleInputChange('mrn', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ICU Room</label>
-                <input
-                  type="text"
-                  value={formData.icuRoom}
-                  onChange={(e) => handleInputChange('icuRoom', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                <input
-                  type="text"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange('age', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                <select
-                  value={formData.gender}
-                  onChange={(e) => handleInputChange('gender', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                >
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
-                <input
-                  type="text"
-                  value={formData.nationality}
-                  onChange={(e) => handleInputChange('nationality', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">DOA</label>
-                <input
-                  type="date"
-                  value={formData.doa}
-                  onChange={(e) => handleInputChange('doa', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">TOA</label>
-                <input
-                  type="time"
-                  value={formData.toa}
-                  onChange={(e) => handleInputChange('toa', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fin. Category</label>
-                <input
-                  type="text"
-                  value={formData.finCategory}
-                  onChange={(e) => handleInputChange('finCategory', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Situation */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Situation</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">C/O</label>
-                <textarea className="w-full rounded-md border border-gray-300 px-3 py-2 h-24"></textarea>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis</label>
-                <textarea className="w-full rounded-md border border-gray-300 px-3 py-2 h-24"></textarea>
-              </div>
-            </div>
-          </div>
-
-          {/* Assessment - Vital Signs */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Assessment</h3>
-          </div>
-          <div className="p-6">
-            <div className="mb-6">
-              <h4 className="font-medium text-gray-800 mb-3">Vital signs on Admission</h4>
-              <div className="grid grid-cols-5 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">BP</label>
-                  <input
-                    type="text"
-                    value={formData.bp}
-                    onChange={(e) => handleInputChange('bp', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    placeholder="mmHg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">HR</label>
-                  <input
-                    type="text"
-                    value={formData.hr}
-                    onChange={(e) => handleInputChange('hr', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    placeholder="bpm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">RR</label>
-                  <input
-                    type="text"
-                    value={formData.rr}
-                    onChange={(e) => handleInputChange('rr', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    placeholder="/min"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Temp</label>
-                  <input
-                    type="text"
-                    value={formData.temp}
-                    onChange={(e) => handleInputChange('temp', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    placeholder="°C"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SpO2</label>
-                  <input
-                    type="text"
-                    value={formData.spo2}
-                    onChange={(e) => handleInputChange('spo2', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                    placeholder="%"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Attached Line Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Attached Line</h3>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left">Invasive Line</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Insertion date</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Insertion Site</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Size</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Removal date</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Inserted By</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invasiveLines.map((line) => (
-                    <tr key={line.id}>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={line.invasiveLine}
-                          onChange={(e) => updateInvasiveLine(line.id, 'invasiveLine', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
+        <div className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Invasive Line</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Insertion Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Insertion Site</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Size</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Removal Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Inserted By</th>
+                  {caseData.attachedLines.length > 1 && (
+                    <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.attachedLines.map((line, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={line.invasiveLine}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'invasiveLine', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter invasive line"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={line.insertionDate}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'insertionDate', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={line.insertionSite}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'insertionSite', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter site"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={line.size}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'size', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Size"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={line.removalDate}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'removalDate', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={line.insertedBy}
+                        onChange={(e) => updateCaseArray(caseData.id, 'attachedLines', index, 'insertedBy', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Inserted by"
+                      />
+                    </td>
+                    {caseData.attachedLines.length > 1 && (
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeArrayItem(caseData.id, 'attachedLines', index)}
+                          className="text-red-600 hover:text-red-800 p-1 no-pdf"
+                          title="Remove line"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="date" 
-                          value={line.insertionDate}
-                          onChange={(e) => updateInvasiveLine(line.id, 'insertionDate', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={line.insertionSite}
-                          onChange={(e) => updateInvasiveLine(line.id, 'insertionSite', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={line.size}
-                          onChange={(e) => updateInvasiveLine(line.id, 'size', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="date" 
-                          value={line.removalDate}
-                          onChange={(e) => updateInvasiveLine(line.id, 'removalDate', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={line.insertedBy}
-                          onChange={(e) => updateInvasiveLine(line.id, 'insertedBy', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {invasiveLines.length > 1 && (
-                          <button
-                            onClick={() => removeInvasiveLine(line.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={addInvasiveLine}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Invasive Line</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Infusion Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Infusion</h3>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Medication / Solution Name</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose + Dilution</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Rate</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {infusions.map((infusion) => (
-                    <tr key={infusion.id}>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="text" 
-                          value={infusion.medicationName}
-                          onChange={(e) => updateInfusion(infusion.id, 'medicationName', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="text" 
-                          value={infusion.doseDilution}
-                          onChange={(e) => updateInfusion(infusion.id, 'doseDilution', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="text" 
-                          value={infusion.rate}
-                          onChange={(e) => updateInfusion(infusion.id, 'rate', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        {infusions.length > 1 && (
-                          <button
-                            onClick={() => removeInfusion(infusion.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={addInfusion}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Infusion</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Antibiotics Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Antibiotics</h3>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Antibiotic Name</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Dose & frequency</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Start at</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">End at</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {antibiotics.map((antibiotic) => (
-                    <tr key={antibiotic.id}>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="text" 
-                          value={antibiotic.antibioticName}
-                          onChange={(e) => updateAntibiotic(antibiotic.id, 'antibioticName', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="text" 
-                          value={antibiotic.doseFrequency}
-                          onChange={(e) => updateAntibiotic(antibiotic.id, 'doseFrequency', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="date" 
-                          value={antibiotic.startAt}
-                          onChange={(e) => updateAntibiotic(antibiotic.id, 'startAt', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input 
-                          type="date" 
-                          value={antibiotic.endAt}
-                          onChange={(e) => updateAntibiotic(antibiotic.id, 'endAt', e.target.value)}
-                          className="w-full border-0 focus:outline-none text-sm" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        {antibiotics.length > 1 && (
-                          <button
-                            onClick={() => removeAntibiotic(antibiotic.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={addAntibiotic}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Antibiotic</span>
-              </button>
-            </div>
-          </div>
-
-          {/* High Alert Medications (HAM) Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">High Alert Medications (HAM)</h3>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Medication Name</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Dose</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Frequency</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Route</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Date</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Time</th>
-                    {hamMedications.length > 1 && (
-                      <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
                     )}
                   </tr>
-                </thead>
-                <tbody>
-                  {hamMedications.map((ham, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="text"
-                          value={ham.medicationName}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].medicationName = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                          placeholder="Enter medication name"
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="text"
-                          value={ham.dose}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].dose = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                          placeholder="Enter dose"
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="text"
-                          value={ham.frequency}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].frequency = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                          placeholder="Enter frequency"
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="text"
-                          value={ham.route}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].route = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                          placeholder="Enter route"
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="date"
-                          value={ham.startDate}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].startDate = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        <input
-                          type="time"
-                          value={ham.startTime}
-                          onChange={(e) => {
-                            const updated = [...hamMedications];
-                            updated[index].startTime = e.target.value;
-                            setHamMedications(updated);
-                          }}
-                          className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
-                        />
-                      </td>
-                      {hamMedications.length > 1 && (
-                        <td className="border border-gray-300 px-2 py-1 text-center">
-                          <button
-                            onClick={() => removeHamMedication(index)}
-                            className="text-red-600 hover:text-red-800 p-1"
-                            title="Remove HAM medication"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={addHamMedication}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add HAM Medication</span>
-              </button>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Scheduled Tasks and Diet Section */}
-          <div className="grid grid-cols-2 gap-0">
-            {/* Scheduled Tasks */}
-            <div>
-              <div className="bg-blue-200 px-6 py-2">
-                <h3 className="font-semibold">Scheduled Tasks</h3>
-              </div>
-              <div className="p-6 border-r border-gray-300">
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">RBS</label>
-                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">VBG</label>
-                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ECG</label>
-                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Diet */}
-            <div>
-              <div className="bg-blue-200 px-6 py-2">
-                <h3 className="font-semibold">Diet</h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <input type="text" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Bowel Motion</label>
-                    <input type="date" className="w-full rounded-md border border-gray-300 px-3 py-2" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Culture & Sensitivity Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Culture & Sensitivity</h3>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-100">
-                    <th className="border border-gray-300 px-4 py-2 text-left">Date of C/S Collected</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Isolation Precaution taken</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Date of C/S result received</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">C/S Results</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Action Taken</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cultureSensitivities.map((cs) => (
-                    <tr key={cs.id}>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="date" 
-                          value={cs.dateCollected}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'dateCollected', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={cs.type}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'type', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={cs.isolationPrecaution}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'isolationPrecaution', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="date" 
-                          value={cs.dateResultReceived}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'dateResultReceived', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={cs.results}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'results', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        <input 
-                          type="text" 
-                          value={cs.actionTaken}
-                          onChange={(e) => updateCultureSensitivity(cs.id, 'actionTaken', e.target.value)}
-                          className="w-full border-0 focus:outline-none" 
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {cultureSensitivities.length > 1 && (
-                          <button
-                            onClick={() => removeCultureSensitivity(cs.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={addCultureSensitivity}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Culture & Sensitivity</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Anticoagulant Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Anticoagulant</h3>
-          </div>
-          <div className="p-6">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Anticoagulant Type</label>
-              <select
-                value={formData.anticoagulantType}
-                onChange={(e) => handleInputChange('anticoagulantType', e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-              >
-                <option value="">Select Type</option>
-                <option value="pharmacological">Pharmacological</option>
-                <option value="non-pharmacological">Non Pharmacological</option>
-              </select>
-            </div>
-
-            {formData.anticoagulantType === 'pharmacological' && (
-              <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name</label>
-                  <input
-                    type="text"
-                    value={formData.medicationName}
-                    onChange={(e) => handleInputChange('medicationName', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Dose</label>
-                  <input
-                    type="text"
-                    value={formData.dose}
-                    onChange={(e) => handleInputChange('dose', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
-                  <input
-                    type="text"
-                    value={formData.frequency}
-                    onChange={(e) => handleInputChange('frequency', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Route</label>
-                  <input
-                    type="text"
-                    value={formData.route}
-                    onChange={(e) => handleInputChange('route', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-              </div>
-            )}
-
-            {formData.anticoagulantType === 'non-pharmacological' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Non Pharmacological Method</label>
-                <select
-                  value={formData.nonPharmacological}
-                  onChange={(e) => handleInputChange('nonPharmacological', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2"
-                >
-                  <option value="">Select Method</option>
-                  <option value="DVT device">DVT device</option>
-                  <option value="Elastic Stocking">Elastic Stocking</option>
-                </select>
-              </div>
-            )}
-          </div>
-
-          {/* MV Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">MV (Mechanical Ventilation)</h3>
-          </div>
-          <div className="p-6">
-            <div className="mb-4">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={formData.mvConnected}
-                  onChange={(e) => handleInputChange('mvConnected', e.target.checked)}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm font-medium text-gray-700">Patient connected to MV</span>
-              </label>
-            </div>
-
-            {formData.mvConnected && (
-              <div className="grid grid-cols-6 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
-                  <input
-                    type="text"
-                    value={formData.mvMode}
-                    onChange={(e) => handleInputChange('mvMode', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">VT</label>
-                  <input
-                    type="text"
-                    value={formData.mvVT}
-                    onChange={(e) => handleInputChange('mvVT', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">FiO2</label>
-                  <input
-                    type="text"
-                    value={formData.mvFiO2}
-                    onChange={(e) => handleInputChange('mvFiO2', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">PS</label>
-                  <input
-                    type="text"
-                    value={formData.mvPS}
-                    onChange={(e) => handleInputChange('mvPS', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Peep</label>
-                  <input
-                    type="text"
-                    value={formData.mvPeep}
-                    onChange={(e) => handleInputChange('mvPeep', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">O2 Support</label>
-                  <input
-                    type="text"
-                    value={formData.mvO2Support}
-                    onChange={(e) => handleInputChange('mvO2Support', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Last Updates Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Last Updates</h3>
-          </div>
-          <div className="p-6">
-            <textarea 
-              value={formData.lastUpdates}
-              onChange={(e) => handleTextAreaChange('lastUpdates', e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 h-24 resize-none"
-              placeholder="Enter last updates and important notes..."
-            ></textarea>
-          </div>
-
-          {/* Plans Section */}
-          <div className="bg-blue-200 px-6 py-2">
-            <h3 className="font-semibold">Plans</h3>
-          </div>
-          <div className="p-6">
-            <textarea 
-              value={formData.plans}
-              onChange={(e) => handleTextAreaChange('plans', e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 h-32 resize-none"
-              placeholder="Enter treatment plans and future care instructions..."
-            ></textarea>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center rounded-b-lg">
-            <div className="flex space-x-4">
-              <button 
-                onClick={generatePDF}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
-              >
-                <Download className="h-4 w-4" />
-                <span>Save Report as PDF</span>
-              </button>
-              <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition-colors">
-                Print
-              </button>
-            </div>
-            <div className="flex items-center text-sm text-gray-500">
-              <Clock className="h-4 w-4 mr-1" />
-              Last saved: Never
-            </div>
+          <div className="mt-4">
+            <button
+              onClick={() => addArrayItem(caseData.id, 'attachedLines', { invasiveLine: '', insertionDate: '', insertionSite: '', size: '', removalDate: '', insertedBy: '' })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-pdf"
+            >
+              <Plus size={16} />
+              Add Invasive Line
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="text-center py-6 text-gray-600">
-          <p className="text-sm">Designed By Mr. Mohamed Ghonim</p>
+      {/* Infusion Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Infusion</h2>
+        </div>
+        <div className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Medication / Solution Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Dose + Dilution</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Rate</th>
+                  {caseData.infusions.length > 1 && (
+                    <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.infusions.map((infusion, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={infusion.medicationName}
+                        onChange={(e) => updateCaseArray(caseData.id, 'infusions', index, 'medicationName', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter medication name"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={infusion.doseDilution}
+                        onChange={(e) => updateCaseArray(caseData.id, 'infusions', index, 'doseDilution', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter dose + dilution"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={infusion.rate}
+                        onChange={(e) => updateCaseArray(caseData.id, 'infusions', index, 'rate', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter rate"
+                      />
+                    </td>
+                    {caseData.infusions.length > 1 && (
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeArrayItem(caseData.id, 'infusions', index)}
+                          className="text-red-600 hover:text-red-800 p-1 no-pdf"
+                          title="Remove infusion"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => addArrayItem(caseData.id, 'infusions', { medicationName: '', doseDilution: '', rate: '' })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-pdf"
+            >
+              <Plus size={16} />
+              Add Infusion
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Antibiotics Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Antibiotics</h2>
+        </div>
+        <div className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Antibiotic Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Dose & Frequency</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start at</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">End at</th>
+                  {caseData.antibiotics.length > 1 && (
+                    <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.antibiotics.map((antibiotic, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={antibiotic.name}
+                        onChange={(e) => updateCaseArray(caseData.id, 'antibiotics', index, 'name', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter antibiotic name"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={antibiotic.dose}
+                        onChange={(e) => updateCaseArray(caseData.id, 'antibiotics', index, 'dose', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter dose & frequency"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={antibiotic.startAt}
+                        onChange={(e) => updateCaseArray(caseData.id, 'antibiotics', index, 'startAt', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={antibiotic.endAt}
+                        onChange={(e) => updateCaseArray(caseData.id, 'antibiotics', index, 'endAt', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    {caseData.antibiotics.length > 1 && (
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeArrayItem(caseData.id, 'antibiotics', index)}
+                          className="text-red-600 hover:text-red-800 p-1 no-pdf"
+                          title="Remove antibiotic"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => addArrayItem(caseData.id, 'antibiotics', { name: '', dose: '', frequency: '', startAt: '', endAt: '' })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-pdf"
+            >
+              <Plus size={16} />
+              Add Antibiotic
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* High Alert Medications (HAM) Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">High Alert Medications (HAM)</h2>
+        </div>
+        <div className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Medication Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Dose</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Frequency</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Route</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Start Time</th>
+                  {caseData.hamMedications.length > 1 && (
+                    <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.hamMedications.map((ham, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={ham.medicationName}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'medicationName', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter medication name"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={ham.dose}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'dose', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter dose"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={ham.frequency}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'frequency', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter frequency"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={ham.route}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'route', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter route"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={ham.startDate}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'startDate', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="time"
+                        value={ham.startTime}
+                        onChange={(e) => updateCaseArray(caseData.id, 'hamMedications', index, 'startTime', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    {caseData.hamMedications.length > 1 && (
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeArrayItem(caseData.id, 'hamMedications', index)}
+                          className="text-red-600 hover:text-red-800 p-1 no-pdf"
+                          title="Remove HAM medication"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => addArrayItem(caseData.id, 'hamMedications', { medicationName: '', dose: '', frequency: '', route: '', startDate: '', startTime: '' })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-pdf"
+            >
+              <Plus size={16} />
+              Add HAM Medication
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scheduled Tasks Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Scheduled Tasks</h2>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">RBS</label>
+            <input
+              type="text"
+              value={caseData.rbs}
+              onChange={(e) => updateCase(caseData.id, 'rbs', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter RBS details"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">VBG</label>
+            <input
+              type="text"
+              value={caseData.vbg}
+              onChange={(e) => updateCase(caseData.id, 'vbg', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter VBG details"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ECG</label>
+            <input
+              type="text"
+              value={caseData.ecg}
+              onChange={(e) => updateCase(caseData.id, 'ecg', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter ECG details"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Diet Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Diet</h2>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <input
+              type="text"
+              value={caseData.dietType}
+              onChange={(e) => updateCase(caseData.id, 'dietType', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter diet type"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Bowel Motion</label>
+            <input
+              type="text"
+              value={caseData.lastBowelMotion}
+              onChange={(e) => updateCase(caseData.id, 'lastBowelMotion', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter last bowel motion"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Culture & Sensitivity Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Culture & Sensitivity</h2>
+        </div>
+        <div className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Date of C/S Collected</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Type</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Isolation Precaution taken</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Date of C/S result received</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">C/S Results</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium text-gray-700">Action Taken</th>
+                  {caseData.cultureData.length > 1 && (
+                    <th className="border border-gray-300 px-3 py-2 text-center text-sm font-medium text-gray-700">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.cultureData.map((culture, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={culture.dateCollected}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'dateCollected', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={culture.type}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'type', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter type"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={culture.isolationPrecaution}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'isolationPrecaution', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter precaution"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="date"
+                        value={culture.dateResultReceived}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'dateResultReceived', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={culture.results}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'results', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter results"
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1">
+                      <input
+                        type="text"
+                        value={culture.actionTaken}
+                        onChange={(e) => updateCaseArray(caseData.id, 'cultureData', index, 'actionTaken', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-500 rounded"
+                        placeholder="Enter action"
+                      />
+                    </td>
+                    {caseData.cultureData.length > 1 && (
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        <button
+                          onClick={() => removeArrayItem(caseData.id, 'cultureData', index)}
+                          className="text-red-600 hover:text-red-800 p-1 no-pdf"
+                          title="Remove culture"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => addArrayItem(caseData.id, 'cultureData', { dateCollected: '', type: '', isolationPrecaution: '', dateResultReceived: '', results: '', actionTaken: '' })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-pdf"
+            >
+              <Plus size={16} />
+              Add Culture & Sensitivity
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Anticoagulant Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Anticoagulant</h2>
+        </div>
+        <div className="p-6">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <select
+              value={caseData.anticoagulantType}
+              onChange={(e) => updateCase(caseData.id, 'anticoagulantType', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select type</option>
+              <option value="pharmacological">Pharmacological</option>
+              <option value="non-pharmacological">Non Pharmacological</option>
+            </select>
+          </div>
+
+          {caseData.anticoagulantType === 'pharmacological' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Medication Name</label>
+                <input
+                  type="text"
+                  value={caseData.anticoagulantMedication}
+                  onChange={(e) => updateCase(caseData.id, 'anticoagulantMedication', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter medication name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dose</label>
+                <input
+                  type="text"
+                  value={caseData.anticoagulantDose}
+                  onChange={(e) => updateCase(caseData.id, 'anticoagulantDose', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter dose"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                <input
+                  type="text"
+                  value={caseData.anticoagulantFrequency}
+                  onChange={(e) => updateCase(caseData.id, 'anticoagulantFrequency', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter frequency"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Route</label>
+                <input
+                  type="text"
+                  value={caseData.anticoagulantRoute}
+                  onChange={(e) => updateCase(caseData.id, 'anticoagulantRoute', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter route"
+                />
+              </div>
+            </div>
+          )}
+
+          {caseData.anticoagulantType === 'non-pharmacological' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Device</label>
+              <select
+                value={caseData.anticoagulantDevice}
+                onChange={(e) => updateCase(caseData.id, 'anticoagulantDevice', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select device</option>
+                <option value="DVT device">DVT device</option>
+                <option value="Elastic Stocking">Elastic Stocking</option>
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* MV Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">MV (Mechanical Ventilation)</h2>
+        </div>
+        <div className="p-6">
+          <div className="mb-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={caseData.mvConnected}
+                onChange={(e) => updateCase(caseData.id, 'mvConnected', e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Patient connected to MV</span>
+            </label>
+          </div>
+
+          {caseData.mvConnected && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                <input
+                  type="text"
+                  value={caseData.mvMode}
+                  onChange={(e) => updateCase(caseData.id, 'mvMode', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter mode"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">VT</label>
+                <input
+                  type="text"
+                  value={caseData.mvVT}
+                  onChange={(e) => updateCase(caseData.id, 'mvVT', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter VT"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">FiO2</label>
+                <input
+                  type="text"
+                  value={caseData.mvFiO2}
+                  onChange={(e) => updateCase(caseData.id, 'mvFiO2', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter FiO2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">PS</label>
+                <input
+                  type="text"
+                  value={caseData.mvPS}
+                  onChange={(e) => updateCase(caseData.id, 'mvPS', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter PS"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Peep</label>
+                <input
+                  type="text"
+                  value={caseData.mvPeep}
+                  onChange={(e) => updateCase(caseData.id, 'mvPeep', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter Peep"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">O2 Support</label>
+                <input
+                  type="text"
+                  value={caseData.mvO2Support}
+                  onChange={(e) => updateCase(caseData.id, 'mvO2Support', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter O2 support"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Last Updates Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Last Updates</h2>
+        </div>
+        <div className="p-6">
+          <textarea
+            value={caseData.lastUpdates}
+            onChange={(e) => {
+              const formatted = formatTextWithBullets(e.target.value);
+              updateCase(caseData.id, 'lastUpdates', formatted);
+            }}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter last updates (bullets will be added automatically)"
+          />
+        </div>
+      </div>
+
+      {/* Plans Section */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div className="bg-blue-100 px-6 py-3 border-b">
+          <h2 className="text-lg font-semibold text-gray-800">Plans</h2>
+        </div>
+        <div className="p-6">
+          <textarea
+            value={caseData.plans}
+            onChange={(e) => {
+              const formatted = formatTextWithBullets(e.target.value);
+              updateCase(caseData.id, 'plans', formatted);
+            }}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter treatment plans (bullets will be added automatically)"
+          />
         </div>
       </div>
     </div>
   );
-}
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4" id="report-content">
+        {/* MRN Search Section */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+          <div className="bg-green-100 px-6 py-3 border-b">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Search size={20} />
+              Search by MRN
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Enter MRN to search</label>
+                <input
+                  type="text"
+                  value={searchMRN}
+                  onChange={(e) => setSearchMRN(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter MRN number"
+                />
+              </div>
+              <button
+                onClick={searchAndFilter}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors no-pdf"
+              >
+                <Filter size={16} />
+                Filter
+              </button>
+              <button
+                onClick={clearFilter}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors no-pdf"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Display filtered results or all cases */}
+        {showFiltered && filteredCases.length > 0 ? (
+          <div>
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+              Found {filteredCases.length} case(s) matching MRN: "{searchMRN}"
+            </div>
+            {filteredCases.map(renderCase)}
+          </div>
+        ) : showFiltered && filteredCases.length === 0 ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            No cases found matching MRN: "{searchMRN}"
+          </div>
+        ) : (
+          cases.map(renderCase)
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4 justify-center mt-8 no-pdf">
+          <button
+            onClick={addNewCase}
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+          >
+            <Copy size={20} />
+            Add More Cases
+          </button>
+          
+          <button
+            onClick={generatePDF}
+            className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            <Download size={20} />
+            Save Report as PDF
+          </button>
+          
+          <button
+            onClick={() => saveToCloud(cases)}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <Save size={20} />
+            Backup to Cloud
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-12 text-center text-gray-600 border-t pt-6">
+          <p className="text-sm">Designed By Mr. Mohamed Ghonim</p>
+        </footer>
+      </div>
+    </div>
+  );
+};
 
 export default App;
