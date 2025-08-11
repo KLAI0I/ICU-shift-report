@@ -267,7 +267,7 @@ const App: React.FC = () => {
 
   const formatTextWithBullets = (text: string) => {
     return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').join('\n');
-    return text.split('\n').map(line => line.trim() ? `• ${line.trim()}` : '').filter(line => line).join('\n');
+  };
 
   const saveToCloud = async (data: any) => {
     try {
